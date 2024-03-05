@@ -1,20 +1,21 @@
 import React, {useState} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   View,
   TouchableOpacity,
-  KeyboardAvoidingView,
   FlatList,
 } from 'react-native';
 import {removeTask, markAsComplete, filterTasks} from '../redux/actionCreators';
 import PriorityButtons from './PriorityButtons';
+
 const TodoList = () => {
-  const {tasks, filter} = useSelector(state => state.todoReducer);
   const dispatch = useDispatch();
+  const {tasks, filter} = useSelector(state => state.todoReducer);
+  const [searchFilter, setSearchFilter] = useState('');
+  const priorityLevels = ['All', 'High', 'Medium', 'Low'];
 
   const renderItem = ({item}) => {
     return (
@@ -66,20 +67,36 @@ const TodoList = () => {
   const uncompletedTasks = tasks?.filter(task => task.isCompleted === false);
   const completedTasks = tasks?.filter(task => task.isCompleted === true);
 
-  const filteredUncomplete = uncompletedTasks?.filter(
+  const filterByPrio = uncompletedTasks?.filter(
     task => task.priority === filter,
   );
 
-  const priorityLevels = ['All', 'High', 'Medium', 'Low'];
-  const displayedTasks =
-    filter === 'All' ? uncompletedTasks : filteredUncomplete;
+  const displayedTasks = filter === 'All' ? uncompletedTasks : filterByPrio;
+
+  const displayUncompleteWithSearchFilter =
+    searchFilter !== ''
+      ? displayedTasks?.filter(task => task.name === searchFilter)
+      : displayedTasks;
+
+  const displayCompletedWithSearchFilter =
+    searchFilter !== ''
+      ? completedTasks?.filter(task => task.name === searchFilter)
+      : completedTasks;
 
   return (
     <>
       <View style={styles.mainContainer}>
-        <Text style={{fontSize: 25, fontWeight: 700}}>
-          Tasks - {displayedTasks?.length}
-        </Text>
+        <View style={styles.flexColumn}>
+          <Text style={{fontSize: 25, fontWeight: 700}}>
+            Tasks - {displayUncompleteWithSearchFilter?.length}
+          </Text>
+          <TextInput
+            style={styles.inputContainer}
+            placeholder="Search Task"
+            value={searchFilter}
+            onChangeText={input => setSearchFilter(input)}
+          />
+        </View>
 
         {uncompletedTasks?.length !== 0 && (
           <PriorityButtons
@@ -91,7 +108,7 @@ const TodoList = () => {
 
         <FlatList
           renderItem={renderItem}
-          data={displayedTasks}
+          data={displayUncompleteWithSearchFilter}
           keyExtractor={item => item.id.toString()}
         />
       </View>
@@ -102,7 +119,7 @@ const TodoList = () => {
         </Text>
         <FlatList
           renderItem={renderComplete}
-          data={completedTasks}
+          data={displayCompletedWithSearchFilter}
           keyExtractor={item => item.id.toString()}
         />
       </View>
@@ -129,6 +146,18 @@ const styles = StyleSheet.create({
   }),
   nameContainer: {
     flex: 0.4,
+  },
+  inputContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 40,
+    borderColor: '#C0C0C0',
+    borderWidth: 1,
+    width: '50',
+  },
+  flexColumn: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
 export default TodoList;
