@@ -115,7 +115,7 @@ const TodoList = () => {
 
       <View style={styles.mainContainer}>
         <Text style={{fontSize: 25, fontWeight: 700}}>
-          Completed Tasks - {completedTasks?.length}
+          Completed Tasks - {displayCompletedWithSearchFilter?.length}
         </Text>
         <FlatList
           renderItem={renderComplete}
